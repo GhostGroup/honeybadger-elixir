@@ -56,10 +56,14 @@ if Code.ensure_loaded?(Plug) do
         def handle_errors(_conn, %{reason: %FunctionClauseError{function: :do_match}}), do: :ok
 
         def handle_errors(conn, %{reason: reason, stack: stack}) do
+          require Logger
+
           if Plug.Exception.status(reason) == 404 do
+            Logger.info("Honeybadger: status is 404")
             # 404 errors are not reported
             :ok
           else
+            Logger.info("Honeybadger: status is not 404")
             metadata = @plug_data.metadata(conn, __MODULE__)
             Honeybadger.notify(reason, metadata, stack)
           end
